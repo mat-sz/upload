@@ -65,6 +65,7 @@ export class Upload {
         typeof XMLHttpRequest !== 'undefined'
       ) {
         const xhr = new XMLHttpRequest();
+        xhr.open('POST', this.url, true);
 
         if (typeof this.headers === 'object') {
           for (const headerName of Object.keys(this.headers)) {
@@ -99,7 +100,6 @@ export class Upload {
           reject();
         });
 
-        xhr.open('POST', this.url, true);
         xhr.send(this.formData);
       } else {
         throw new Error('node.js environments are not supported yet.');
@@ -175,8 +175,8 @@ export class Upload {
 
   private get formData(): FormData {
     let formData: FormData;
-    if (this.form instanceof FormData) {
-      formData = this.form;
+    if (this.form instanceof FormData || 'buffer' in this.form) {
+      formData = this.form as FormData;
     } else {
       formData = new FormData();
       for (const key of Object.keys(this.form)) {
