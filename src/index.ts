@@ -57,8 +57,8 @@ export class Upload {
   /**
    * POSTs the form.
    */
-  upload(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  upload(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
       // Check if we're running in a browser.
       if (
         typeof window !== 'undefined' &&
@@ -90,7 +90,11 @@ export class Upload {
         xhr.addEventListener('load', () => {
           this.state = 'successful';
           this.emit('state', this.state);
-          resolve();
+          resolve(
+            !xhr.responseType || xhr.responseType === 'text'
+              ? xhr.responseText
+              : xhr.response
+          );
         });
 
         xhr.addEventListener('error', () => {

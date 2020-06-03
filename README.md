@@ -20,7 +20,8 @@ async function test() {
     element.innerText = progress * 100 + '%';
   });
 
-  await upload.upload();
+  const response = await upload.upload();
+  console.log(response);
 
   alert('Done!');
 }
@@ -57,7 +58,7 @@ public uploadedBytes = 0;
 public totalBytes = 0;
 
 constructor(options: UploadOptions);
-upload(): Promise<void>;
+upload(): Promise<any>;
 
 on(eventType: 'progress', listener: (progress: number) => void): void;
 on(eventType: 'error', listener: () => void): void;
