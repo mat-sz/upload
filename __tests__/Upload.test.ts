@@ -18,10 +18,14 @@ describe('Upload', () => {
     const onProgress = jest.fn((p: number) => (progress = p));
 
     upload.on('progress', onProgress);
-    await upload.upload();
+    const response = await upload.upload();
 
     expect(onProgress).toBeCalled();
     expect(progress).toBe(1);
     expect(upload.state).toBe('successful');
+    expect(typeof response).toBe('string');
+
+    const json = JSON.parse(response as string);
+    expect(json['files']['file']).toBe('test');
   });
 });
