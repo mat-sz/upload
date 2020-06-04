@@ -1,7 +1,7 @@
 import { request as httpRequest, IncomingMessage, RequestOptions } from 'http';
 import { URL } from 'url';
 import { request as httpsRequest } from 'https';
-import FormDataNode from 'form-data';
+import FormDataNode, { SubmitOptions } from 'form-data';
 
 export interface UploadOptions {
   form: Record<string, string | Blob> | FormData | FormDataNode;
@@ -117,44 +117,56 @@ export class Upload {
 
         xhr.send(this.formData as FormData);
       } else {
-        const callback = (res: IncomingMessage) => {
-          let body = '';
-          res.on('readable', () => {
-            body += res.read();
-          });
-          res.on('end', () => {
-            resolve(body as any);
-          });
+        const callback = (error: Error | null, res: IncomingMessage) => {
+          if (error) {
+            this.state = 'failed';
+            this.emit('state', this.state);
+            this.emit('error');
+
+            reject();
+          } else {
+            this.state = 'successful';
+            this.emit('state', this.state);
+
+            let body = '';
+            res.on('readable', () => {
+              body += res.read();
+            });
+            res.on('end', () => {
+              resolve(body as any);
+            });
+          }
         };
 
         const url = new URL(this.url);
-        const options: RequestOptions = {
+        const options: SubmitOptions = {
           hostname: url.hostname,
           port: url.port,
           path: url.pathname,
           method: 'POST',
+          headers: this.headers,
         };
 
-        const req =
-          url.protocol === 'https'
-            ? httpsRequest(options, callback)
-            : httpRequest(options, callback);
-
         const formData = this.formData as FormDataNode;
-        const formDataHeaders = formData.getHeaders();
 
-        for (const header of Object.keys(formDataHeaders)) {
-          req.setHeader(header, formDataHeaders[header]);
-        }
-
-        if (this.headers) {
-          for (const header of Object.keys(this.headers)) {
-            req.setHeader(header, this.headers[header]);
+        formData.getLength((error: Error | null, length: number) => {
+          this.totalBytes = length;
+        });
+        formData.on('data', chunk => {
+          if (this.state === 'new') {
+            this.state = 'started';
+            this.emit('state', this.state);
           }
-        }
 
-        req.write(formData.getBuffer());
-        req.end();
+          // eslint-disable-next-line no-prototype-builtins
+          if (chunk.hasOwnProperty('length')) {
+            this.uploadedBytes += chunk.length as number;
+            this.progress = this.uploadedBytes / this.totalBytes;
+            this.emit('progress', this.progress);
+          }
+        });
+
+        formData.submit(options, callback);
       }
     });
   }

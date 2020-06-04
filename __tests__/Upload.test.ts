@@ -11,10 +11,8 @@ describe('Upload', () => {
     const upload = new Upload({
       url: 'https://httpbin.org/post',
       // @ts-ignore
-      form: formData.getBuffer(),
+      form: formData,
     });
-
-    await upload.upload();
 
     expect(upload.state).toBe('successful');
   });
