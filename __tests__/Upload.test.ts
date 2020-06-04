@@ -14,6 +14,14 @@ describe('Upload', () => {
       form: formData,
     });
 
+    let progress = 0;
+    const onProgress = jest.fn((p: number) => (progress = p));
+
+    upload.on('progress', onProgress);
+    await upload.upload();
+
+    expect(onProgress).toBeCalled();
+    expect(progress).toBe(1);
     expect(upload.state).toBe('successful');
   });
 });

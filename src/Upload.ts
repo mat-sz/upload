@@ -1,6 +1,5 @@
-import { request as httpRequest, IncomingMessage, RequestOptions } from 'http';
+import { IncomingMessage } from 'http';
 import { URL } from 'url';
-import { request as httpsRequest } from 'https';
 import FormDataNode, { SubmitOptions } from 'form-data';
 
 export interface UploadOptions {
@@ -98,6 +97,10 @@ export class Upload {
         }
 
         xhr.addEventListener('load', () => {
+          this.progress = 1.0;
+          this.uploadedBytes = this.totalBytes;
+          this.emit('progress', this.progress);
+
           this.state = 'successful';
           this.emit('state', this.state);
 
@@ -125,6 +128,10 @@ export class Upload {
 
             reject();
           } else {
+            this.progress = 1.0;
+            this.uploadedBytes = this.totalBytes;
+            this.emit('progress', this.progress);
+
             this.state = 'successful';
             this.emit('state', this.state);
 
