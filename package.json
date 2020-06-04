@@ -52,7 +52,6 @@
     "lint-staged": "^10.0.9",
     "prettier": "^2.0.2",
     "ts-jest": "^25.3.0",
-    "typescript": "^3.7.4",
-    "xmlhttprequest": "^1.8.0"
+    "typescript": "^3.7.4"
   }
 }

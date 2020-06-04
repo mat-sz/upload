@@ -1,5 +1,10 @@
+import { request as httpRequest, IncomingMessage, RequestOptions } from 'http';
+import { URL } from 'url';
+import { request as httpsRequest } from 'https';
+import FormDataNode from 'form-data';
+
 export interface UploadOptions {
-  form: Record<string, string | Blob> | FormData;
+  form: Record<string, string | Blob> | FormData | FormDataNode;
   url: string;
   headers?: Record<string, string>;
 }
@@ -34,7 +39,7 @@ export class Upload {
     progress: new Set(),
   };
 
-  private form: Record<string, string | Blob> | FormData;
+  private form: Record<string, string | Blob> | FormData | FormDataNode;
   private url: string;
   private headers?: Record<string, string>;
 
@@ -110,9 +115,46 @@ export class Upload {
           reject();
         });
 
-        xhr.send(this.formData);
+        xhr.send(this.formData as FormData);
       } else {
-        throw new Error('node.js environments are not supported yet.');
+        const callback = (res: IncomingMessage) => {
+          let body = '';
+          res.on('readable', () => {
+            body += res.read();
+          });
+          res.on('end', () => {
+            resolve(body as any);
+          });
+        };
+
+        const url = new URL(this.url);
+        const options: RequestOptions = {
+          hostname: url.hostname,
+          port: url.port,
+          path: url.pathname,
+          method: 'POST',
+        };
+
+        const req =
+          url.protocol === 'https'
+            ? httpsRequest(options, callback)
+            : httpRequest(options, callback);
+
+        const formData = this.formData as FormDataNode;
+        const formDataHeaders = formData.getHeaders();
+
+        for (const header of Object.keys(formDataHeaders)) {
+          req.setHeader(header, formDataHeaders[header]);
+        }
+
+        if (this.headers) {
+          for (const header of Object.keys(this.headers)) {
+            req.setHeader(header, this.headers[header]);
+          }
+        }
+
+        req.write(formData.getBuffer());
+        req.end();
       }
     });
   }
@@ -183,17 +225,28 @@ export class Upload {
     }
   }
 
-  private get formData(): FormData {
-    let formData: FormData;
-    if (this.form instanceof FormData || 'buffer' in this.form) {
-      formData = this.form as FormData;
-    } else {
-      formData = new FormData();
+  private get formData(): FormData | FormDataNode | undefined {
+    if (
+      (typeof FormData !== 'undefined' && this.form instanceof FormData) ||
+      (typeof FormDataNode !== 'undefined' && this.form instanceof FormDataNode)
+    ) {
+      return this.form as FormData;
+    } else if (typeof FormData !== 'undefined') {
+      const formData = new FormData();
       for (const key of Object.keys(this.form)) {
+        // eslint-disable-next-line
+        // @ts-ignore
+        formData.set(key, this.form[key]);
+      }
+      return formData;
+    } else if (typeof FormDataNode !== 'undefined') {
+      const formData = new FormDataNode();
+      for (const key of Object.keys(this.form)) {
+        // eslint-disable-next-line
+        // @ts-ignore
         formData.append(key, this.form[key]);
       }
+      return formData;
     }
-
-    return formData;
   }
 }

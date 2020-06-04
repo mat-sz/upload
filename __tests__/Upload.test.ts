@@ -1,14 +1,6 @@
 /* eslint-disable */
 import FD from 'form-data';
-// @ts-ignore
-import { XMLHttpRequest as XHR } from 'xmlhttprequest';
 import { Upload } from '../src';
-
-// @ts-ignore
-global.XMLHttpRequest = XHR;
-
-// @ts-ignore
-global.FormData = FD;
 
 describe('Upload', () => {
   it('uploads files', async () => {
