@@ -80,12 +80,14 @@ export class Upload {
           this.emit('state', this.state);
         });
 
-        xhr.addEventListener('progress', e => {
-          this.progress = e.loaded / e.total;
-          this.uploadedBytes = e.loaded;
-          this.totalBytes = e.total;
-          this.emit('progress', this.progress);
-        });
+        if (xhr.upload) {
+          xhr.upload.addEventListener('progress', e => {
+            this.progress = e.loaded / e.total;
+            this.uploadedBytes = e.loaded;
+            this.totalBytes = e.total;
+            this.emit('progress', this.progress);
+          });
+        }
 
         xhr.addEventListener('load', () => {
           this.state = 'successful';
