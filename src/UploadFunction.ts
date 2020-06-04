@@ -8,7 +8,7 @@ export async function upload(
   url: string,
   form: Record<string, string | Blob> | FormData,
   options?: UploadFunctionOptions
-): Promise<any> {
+): Promise<Response> {
   const upload = new Upload({
     url,
     form,

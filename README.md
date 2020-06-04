@@ -58,7 +58,7 @@ public uploadedBytes = 0;
 public totalBytes = 0;
 
 constructor(options: UploadOptions);
-upload(): Promise<any>;
+upload(): Promise<Response>;
 
 on(eventType: 'progress', listener: (progress: number) => void): void;
 on(eventType: 'error', listener: () => void): void;

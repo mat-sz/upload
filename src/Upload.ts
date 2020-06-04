@@ -60,8 +60,8 @@ export class Upload {
   /**
    * POSTs the form.
    */
-  upload(): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
+  upload(): Promise<Response> {
+    return new Promise<Response>((resolve, reject) => {
       // Check if we're running in a browser.
       if (
         typeof window !== 'undefined' &&
@@ -95,11 +95,12 @@ export class Upload {
         xhr.addEventListener('load', () => {
           this.state = 'successful';
           this.emit('state', this.state);
-          resolve(
-            !xhr.responseType || xhr.responseType === 'text'
-              ? xhr.responseText
-              : xhr.response
-          );
+
+          if (xhr.responseType === 'json') {
+            resolve(new Response(JSON.stringify(xhr.response)));
+          } else {
+            resolve(new Response(xhr.response));
+          }
         });
 
         xhr.addEventListener('error', () => {
