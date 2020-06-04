@@ -42,10 +42,9 @@ export class Upload {
   private url: string;
   private headers?: Record<string, string>;
 
-  public state: UploadState = 'new';
-  public progress = 0;
-  public uploadedBytes = 0;
-  public totalBytes = 0;
+  private _uploadedBytes = 0;
+  private _totalBytes = 0;
+  private _state: UploadState = 'new';
 
   constructor(options: UploadOptions) {
     if (!options) {
@@ -83,26 +82,21 @@ export class Upload {
         xhr.setRequestHeader('Content-Type', 'multipart/form-data');
 
         xhr.addEventListener('loadstart', () => {
-          this.state = 'started';
-          this.emit('state', this.state);
+          this.setState('started');
         });
 
         if (xhr.upload) {
           xhr.upload.addEventListener('progress', e => {
-            this.progress = e.loaded / e.total;
-            this.uploadedBytes = e.loaded;
-            this.totalBytes = e.total;
-            this.emit('progress', this.progress);
+            if (this._totalBytes !== e.total) {
+              this.setTotalBytes(e.total);
+            }
+            this.setUploadedBytes(e.loaded);
           });
         }
 
         xhr.addEventListener('load', () => {
-          this.progress = 1.0;
-          this.uploadedBytes = this.totalBytes;
-          this.emit('progress', this.progress);
-
-          this.state = 'successful';
-          this.emit('state', this.state);
+          this.setUploadedBytes(this.totalBytes);
+          this.setState('successful');
 
           if (xhr.responseType === 'json') {
             resolve(new Response(JSON.stringify(xhr.response)));
@@ -112,8 +106,7 @@ export class Upload {
         });
 
         xhr.addEventListener('error', () => {
-          this.state = 'failed';
-          this.emit('state', this.state);
+          this.setState('failed');
           this.emit('error');
           reject();
         });
@@ -122,18 +115,13 @@ export class Upload {
       } else {
         const callback = (error: Error | null, res: IncomingMessage) => {
           if (error) {
-            this.state = 'failed';
-            this.emit('state', this.state);
+            this.setState('failed');
             this.emit('error');
 
             reject();
           } else {
-            this.progress = 1.0;
-            this.uploadedBytes = this.totalBytes;
-            this.emit('progress', this.progress);
-
-            this.state = 'successful';
-            this.emit('state', this.state);
+            this.setUploadedBytes(this.totalBytes);
+            this.setState('successful');
 
             let body = '';
             res.on('readable', () => {
@@ -157,25 +145,60 @@ export class Upload {
         const formData = this.formData as FormDataNode;
 
         formData.getLength((error: Error | null, length: number) => {
-          this.totalBytes = length;
+          this.setTotalBytes(length);
         });
         formData.on('data', chunk => {
           if (this.state === 'new') {
-            this.state = 'started';
-            this.emit('state', this.state);
+            this.setState('started');
           }
 
-          // eslint-disable-next-line no-prototype-builtins
           if (chunk.hasOwnProperty('length')) {
-            this.uploadedBytes += chunk.length as number;
-            this.progress = this.uploadedBytes / this.totalBytes;
-            this.emit('progress', this.progress);
+            this.increaseUploadedBytes(chunk.length as number);
           }
         });
 
         formData.submit(options, callback);
       }
     });
+  }
+
+  get uploadedBytes(): number {
+    return this._uploadedBytes;
+  }
+
+  private setUploadedBytes(value: number) {
+    this._uploadedBytes = value;
+    this.emit('progress', this.progress);
+  }
+
+  private increaseUploadedBytes(value: number) {
+    this._uploadedBytes += value;
+    this.emit('progress', this.progress);
+  }
+
+  get totalBytes(): number {
+    return this._totalBytes;
+  }
+
+  private setTotalBytes(value: number) {
+    this._totalBytes = value;
+    this.emit('progress', this.progress);
+  }
+
+  get progress(): number {
+    return this._totalBytes === 0 ? 0 : this._uploadedBytes / this._totalBytes;
+  }
+
+  get state(): UploadState {
+    return this._state;
+  }
+
+  private setState(value: UploadState) {
+    const oldState = this._state;
+    this._state = value;
+    if (oldState !== this._state) {
+      this.emit('state', this._state);
+    }
   }
 
   /**
