@@ -1,8 +1,30 @@
 # upload
 
-Isomorphic TypeScript file upload library for browser and node environments (only browser is supported as for now).
+Isomorphic TypeScript file upload library for browser and node.js environments.
 
 ## Example usage
+
+### upload function
+
+```ts
+import { upload } from 'upload';
+
+async function test() {
+  const response = await upload(
+    'https://example.com/upload',
+    {
+      file: someInput.file,
+    },
+    {
+      onProgress: progress => (element.innerText = progress * 100 + '%'),
+    }
+  );
+
+  console.log(response);
+}
+```
+
+### Upload class
 
 ```ts
 async function test() {
@@ -58,7 +80,7 @@ public uploadedBytes = 0;
 public totalBytes = 0;
 
 constructor(options: UploadOptions);
-upload(): Promise<Response>;
+upload(): Promise<Response | string | ArrayBuffer>;
 
 on(eventType: 'progress', listener: (progress: number) => void): void;
 on(eventType: 'error', listener: () => void): void;

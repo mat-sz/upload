@@ -63,8 +63,8 @@ export class Upload {
   /**
    * POSTs the form.
    */
-  upload(): Promise<Response> {
-    return new Promise<Response>((resolve, reject) => {
+  upload(): Promise<Response | string | ArrayBuffer> {
+    return new Promise<Response | string | ArrayBuffer>((resolve, reject) => {
       // Check if we're running in a browser.
       if (
         typeof window !== 'undefined' &&
