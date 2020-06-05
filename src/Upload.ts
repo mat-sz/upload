@@ -111,7 +111,16 @@ export class Upload {
           reject();
         });
 
-        xhr.send(this.formData as FormData);
+        if (this.form instanceof FormData) {
+          xhr.send(this.form);
+        } else {
+          const form = this.form as Record<string, string | Blob>;
+          const formData = new FormData();
+          for (const key of Object.keys(this.form)) {
+            formData.set(key, form[key]);
+          }
+          xhr.send(formData);
+        }
       } else {
         const callback = (error: Error | null, res: IncomingMessage) => {
           if (error) {
@@ -142,11 +151,22 @@ export class Upload {
           headers: this.headers,
         };
 
-        const formData = this.formData as FormDataNode;
+        let formData: FormDataNode;
+
+        if (this.form instanceof FormDataNode) {
+          formData = this.form;
+        } else {
+          const form = this.form as Record<string, string | Blob>;
+          formData = new FormDataNode();
+          for (const key of Object.keys(this.form)) {
+            formData.append(key, form[key]);
+          }
+        }
 
         formData.getLength((error: Error | null, length: number) => {
           this.setTotalBytes(length);
         });
+
         formData.on('data', chunk => {
           if (this.state === 'new') {
             this.setState('started');
@@ -264,31 +284,6 @@ export class Upload {
   private emit(eventType: keyof UploadEvents, ...args: any[]) {
     for (const listener of this.events[eventType]) {
       (listener as any).apply(this, args);
-    }
-  }
-
-  private get formData(): FormData | FormDataNode | undefined {
-    if (
-      (typeof FormData !== 'undefined' && this.form instanceof FormData) ||
-      (typeof FormDataNode !== 'undefined' && this.form instanceof FormDataNode)
-    ) {
-      return this.form as FormData;
-    } else if (typeof FormData !== 'undefined') {
-      const formData = new FormData();
-      for (const key of Object.keys(this.form)) {
-        // eslint-disable-next-line
-        // @ts-ignore
-        formData.set(key, this.form[key]);
-      }
-      return formData;
-    } else if (typeof FormDataNode !== 'undefined') {
-      const formData = new FormDataNode();
-      for (const key of Object.keys(this.form)) {
-        // eslint-disable-next-line
-        // @ts-ignore
-        formData.append(key, this.form[key]);
-      }
-      return formData;
     }
   }
 }
