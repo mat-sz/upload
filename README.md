@@ -1,12 +1,16 @@
-# upload
+<h1 align="center">
+<img src="https://raw.githubusercontent.com/mat-sz/upload/master/logo.png" alt="upload" width="700">
+</h1>
 
+<p align="center">
 Isomorphic TypeScript file upload library for browser and node.js environments.
+</p>
 
-## Installation
+<p align="center">
+<strong>Quickstart:</strong>
+</p>
 
 **Notice:** This package is not published yet.
-
-upload is available from [npm](https://npmjs.com/package/upload) under the name `upload`.
 
 ```
 npm install upload
