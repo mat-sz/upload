@@ -2,6 +2,20 @@
 
 Isomorphic TypeScript file upload library for browser and node.js environments.
 
+## Installation
+
+**Notice:** This package is not published yet.
+
+upload is available from [npm](https://npmjs.com/package/upload) under the name `upload`.
+
+```
+npm install upload
+
+# ...or
+
+yarn add upload
+```
+
 ## Example usage
 
 ### upload function
