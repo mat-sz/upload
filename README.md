@@ -16,8 +16,6 @@ Isomorphic TypeScript file upload library for browser and node.js environments.
 <strong>Quickstart:</strong>
 </p>
 
-**Notice:** This package is not published yet.
-
 ```
 npm install upload
 
