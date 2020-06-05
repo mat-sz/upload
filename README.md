@@ -7,6 +7,12 @@ Isomorphic TypeScript file upload library for browser and node.js environments.
 </p>
 
 <p align="center">
+<img alt="Travis (.com)" src="https://img.shields.io/travis/com/mat-sz/upload">
+<a href="https://npmjs.com/package/upload"><img alt="npm" src="https://img.shields.io/npm/v/upload"></a>
+<img alt="npm" src="https://img.shields.io/npm/dw/upload">
+</p>
+
+<p align="center">
 <strong>Quickstart:</strong>
 </p>
 
