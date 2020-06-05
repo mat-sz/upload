@@ -8,6 +8,10 @@ export interface UploadOptions {
   headers?: Record<string, string>;
 }
 
+export interface UploadResponse {
+  data?: string | ArrayBuffer | Blob;
+}
+
 export type UploadState = 'new' | 'started' | 'failed' | 'successful';
 
 export type UploadStateChangeEventListener = (
@@ -63,8 +67,8 @@ export class Upload {
   /**
    * POSTs the form.
    */
-  upload(): Promise<Response | string | ArrayBuffer> {
-    return new Promise<Response | string | ArrayBuffer>((resolve, reject) => {
+  upload(): Promise<UploadResponse> {
+    return new Promise<UploadResponse>((resolve, reject) => {
       // Check if we're running in a browser.
       if (
         typeof window !== 'undefined' &&
@@ -98,11 +102,17 @@ export class Upload {
           this.setUploadedBytes(this.totalBytes);
           this.setState('successful');
 
-          if (xhr.responseType === 'json') {
-            resolve(new Response(JSON.stringify(xhr.response)));
-          } else {
-            resolve(new Response(xhr.response));
+          const response: UploadResponse = {};
+
+          switch (xhr.responseType) {
+            case 'json':
+              response.data = JSON.stringify(xhr.response);
+              break;
+            default:
+              response.data = xhr.response;
           }
+
+          resolve(response);
         });
 
         xhr.addEventListener('error', () => {
@@ -140,7 +150,9 @@ export class Upload {
               }
             });
             res.on('end', () => {
-              resolve(body as any);
+              const response: UploadResponse = {};
+              response.data = body;
+              resolve(response);
             });
           }
         };

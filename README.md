@@ -98,13 +98,17 @@ Emitted when upload progress changes.
 ## API
 
 ```
+interface UploadResponse {
+  data?: string | ArrayBuffer | Blob;
+}
+
 public state: UploadState = 'new';
 public progress = 0;
 public uploadedBytes = 0;
 public totalBytes = 0;
 
 constructor(options: UploadOptions);
-upload(): Promise<Response | string | ArrayBuffer>;
+upload(): Promise<UploadResponse>;
 
 on(eventType: 'progress', listener: (progress: number) => void): void;
 on(eventType: 'error', listener: () => void): void;
