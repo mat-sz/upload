@@ -134,7 +134,10 @@ export class Upload {
 
             let body = '';
             res.on('readable', () => {
-              body += res.read();
+              const chunk = res.read();
+              if (chunk) {
+                body += chunk;
+              }
             });
             res.on('end', () => {
               resolve(body as any);
