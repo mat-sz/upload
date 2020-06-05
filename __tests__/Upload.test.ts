@@ -23,9 +23,9 @@ describe('Upload', () => {
     expect(onProgress).toBeCalled();
     expect(progress).toBe(1);
     expect(upload.state).toBe('successful');
-    expect(typeof response).toBe('string');
+    expect(typeof response.data).toBe('string');
 
-    const json = JSON.parse(response as string);
+    const json = JSON.parse(response.data as string);
     expect(json['files']['file']).toBe('test');
   });
 });
