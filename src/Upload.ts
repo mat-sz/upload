@@ -10,6 +10,7 @@ export interface UploadOptions {
 
 export interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
+  headers?: Record<string, string | string[] | undefined>;
 }
 
 export type UploadState = 'new' | 'started' | 'failed' | 'successful';
@@ -103,6 +104,19 @@ export class Upload {
           this.setState('successful');
 
           const response: UploadResponse = {};
+          const lines = xhr
+            .getAllResponseHeaders()
+            .replace(/\r/g, '')
+            .split('\n');
+          const headers: Record<string, string> = {};
+          for (const line of lines) {
+            const split = line.split(':');
+            if (split.length != 2) {
+              continue;
+            }
+            headers[split[0].trim()] = split[1].trim();
+          }
+          response.headers = headers;
 
           switch (xhr.responseType) {
             case 'json':
@@ -152,6 +166,7 @@ export class Upload {
             res.on('end', () => {
               const response: UploadResponse = {};
               response.data = body;
+              response.headers = res.headers;
               resolve(response);
             });
           }

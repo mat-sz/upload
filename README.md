@@ -100,6 +100,7 @@ Emitted when upload progress changes.
 ```
 interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
+  headers?: Record<string, string | string[] | undefined>;
 }
 
 public state: UploadState = 'new';
