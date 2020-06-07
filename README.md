@@ -8,8 +8,11 @@ Isomorphic TypeScript file upload library for browser and node.js environments.
 
 <p align="center">
 <img alt="Travis (.com)" src="https://img.shields.io/travis/com/mat-sz/upload">
-<a href="https://npmjs.com/package/upload"><img alt="npm" src="https://img.shields.io/npm/v/upload"></a>
+<a href="https://npmjs.com/package/upload">
+<img alt="npm" src="https://img.shields.io/npm/v/upload">
 <img alt="npm" src="https://img.shields.io/npm/dw/upload">
+<img alt="NPM" src="https://img.shields.io/npm/l/upload">
+</a>
 </p>
 
 <p align="center">
