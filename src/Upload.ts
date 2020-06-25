@@ -235,6 +235,9 @@ export class Upload {
     this.emit('progress', this.progress);
   }
 
+  /**
+   * Current upload progress. A float between 0 and 1.
+   */
   get progress(): number {
     return this._totalBytes === 0 ? 0 : this._uploadedBytes / this._totalBytes;
   }

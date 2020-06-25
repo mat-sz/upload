@@ -94,9 +94,9 @@ Emitted when upload state is changed. Possible states: 'new', 'started', 'failed
 
 Emitted when an error occurs.
 
-### progress
+### progress (progress: number)
 
-Emitted when upload progress changes.
+Emitted when upload progress changes. Progress is a float between 0 and 1.
 
 ## API
 
