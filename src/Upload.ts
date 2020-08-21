@@ -84,8 +84,6 @@ export class Upload {
           }
         }
 
-        xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-
         xhr.addEventListener('loadstart', () => {
           this.setState('started');
         });
