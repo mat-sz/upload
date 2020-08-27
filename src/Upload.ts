@@ -13,7 +13,12 @@ export interface UploadResponse {
   headers?: Record<string, string | string[] | undefined>;
 }
 
-export type UploadState = 'new' | 'started' | 'failed' | 'successful';
+export type UploadState =
+  | 'new'
+  | 'started'
+  | 'failed'
+  | 'successful'
+  | 'aborted';
 
 export type UploadStateChangeEventListener = (
   this: Upload,
@@ -46,6 +51,7 @@ export class Upload {
   private form: Record<string, string | Blob> | FormData | FormDataNode;
   private url: string;
   private headers?: Record<string, string>;
+  private xhr?: XMLHttpRequest;
 
   private _uploadedBytes = 0;
   private _totalBytes = 0;
@@ -75,21 +81,21 @@ export class Upload {
         typeof window !== 'undefined' &&
         typeof XMLHttpRequest !== 'undefined'
       ) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', this.url, true);
+        this.xhr = new XMLHttpRequest();
+        this.xhr.open('POST', this.url, true);
 
         if (typeof this.headers === 'object') {
           for (const headerName of Object.keys(this.headers)) {
-            xhr.setRequestHeader(headerName, this.headers[headerName]);
+            this.xhr.setRequestHeader(headerName, this.headers[headerName]);
           }
         }
 
-        xhr.addEventListener('loadstart', () => {
+        this.xhr.addEventListener('loadstart', () => {
           this.setState('started');
         });
 
-        if (xhr.upload) {
-          xhr.upload.addEventListener('progress', e => {
+        if (this.xhr.upload) {
+          this.xhr.upload.addEventListener('progress', e => {
             if (this._totalBytes !== e.total) {
               this.setTotalBytes(e.total);
             }
@@ -97,51 +103,57 @@ export class Upload {
           });
         }
 
-        xhr.addEventListener('load', () => {
-          this.setUploadedBytes(this.totalBytes);
-          this.setState('successful');
+        this.xhr.addEventListener('load', () => {
+          if (this.xhr) {
+            this.setUploadedBytes(this.totalBytes);
+            this.setState('successful');
 
-          const response: UploadResponse = {};
-          const lines = xhr
-            .getAllResponseHeaders()
-            .replace(/\r/g, '')
-            .split('\n');
-          const headers: Record<string, string> = {};
-          for (const line of lines) {
-            const split = line.split(':');
-            if (split.length != 2) {
-              continue;
+            const response: UploadResponse = {};
+            const lines = this.xhr
+              .getAllResponseHeaders()
+              .replace(/\r/g, '')
+              .split('\n');
+            const headers: Record<string, string> = {};
+            for (const line of lines) {
+              const split = line.split(':');
+              if (split.length != 2) {
+                continue;
+              }
+              headers[split[0].trim()] = split[1].trim();
             }
-            headers[split[0].trim()] = split[1].trim();
-          }
-          response.headers = headers;
+            response.headers = headers;
 
-          switch (xhr.responseType) {
-            case 'json':
-              response.data = JSON.stringify(xhr.response);
-              break;
-            default:
-              response.data = xhr.response;
-          }
+            switch (this.xhr.responseType) {
+              case 'json':
+                response.data = JSON.stringify(this.xhr.response);
+                break;
+              default:
+                response.data = this.xhr.response;
+            }
 
-          resolve(response);
+            resolve(response);
+          }
         });
 
-        xhr.addEventListener('error', () => {
+        this.xhr.addEventListener('error', () => {
           this.setState('failed');
           this.emit('error');
           reject();
         });
 
+        this.xhr.addEventListener('abort', () => {
+          this.setState('aborted');
+        });
+
         if (this.form instanceof FormData) {
-          xhr.send(this.form);
+          this.xhr.send(this.form);
         } else {
           const form = this.form as Record<string, string | Blob>;
           const formData = new FormData();
           for (const key of Object.keys(this.form)) {
             formData.set(key, form[key]);
           }
-          xhr.send(formData);
+          this.xhr.send(formData);
         }
       } else {
         const callback = (error: Error | null, res: IncomingMessage) => {
@@ -208,6 +220,10 @@ export class Upload {
         formData.submit(options, callback);
       }
     });
+  }
+
+  abort(): void {
+    this.xhr?.abort();
   }
 
   get uploadedBytes(): number {
