@@ -74,6 +74,21 @@ async function test() {
 }
 ```
 
+## Abort request
+```ts
+  const upload = new Upload({
+    url: 'https://httpbin.org/post',
+    form: someInput.file,
+  });
+
+  upload.on('state', () => {
+    if (upload.state === 'aborted') doSomething();
+  });
+
+  upload.upload();
+  upload.abort();
+  ```
+
 ## Events
 
 You can attach event listeners to an instance of `Upload` with `.on`:
@@ -86,7 +101,7 @@ upload.on('state', state => {
 
 ### state
 
-Emitted when upload state is changed. Possible states: 'new', 'started', 'failed', 'successful'.
+Emitted when upload state is changed. Possible states: `new`, `started`, `aborted`, `failed`, `successful`.
 
 ### error
 
@@ -98,10 +113,16 @@ Emitted when upload progress changes. Progress is a float between 0 and 1.
 
 ## API
 
-```
+```ts
 interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
   headers?: Record<string, string | string[] | undefined>;
+}
+
+interface UploadOptions {
+  form: Record<string, string | Blob> | FormData | FormDataNode;
+  url: string;
+  headers?: Record<string, string>;
 }
 
 public state: UploadState = 'new';
@@ -109,8 +130,9 @@ public progress = 0;
 public uploadedBytes = 0;
 public totalBytes = 0;
 
-constructor(options: UploadOptions);
+new Upload(options: UploadOptions);
 upload(): Promise<UploadResponse>;
+abort(): void;
 
 on(eventType: 'progress', listener: (progress: number) => void): void;
 on(eventType: 'error', listener: () => void): void;
