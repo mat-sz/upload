@@ -74,20 +74,21 @@ async function test() {
 }
 ```
 
-## Abort request
+### Abort request
+
 ```ts
-  const upload = new Upload({
-    url: 'https://httpbin.org/post',
-    form: someInput.file,
-  });
+const upload = new Upload({
+  url: 'https://httpbin.org/post',
+  form: someInput.file,
+});
 
-  upload.on('state', () => {
-    if (upload.state === 'aborted') doSomething();
-  });
+upload.on('state', () => {
+  if (upload.state === 'aborted') doSomething();
+});
 
-  upload.upload();
-  upload.abort();
-  ```
+upload.upload();
+upload.abort();
+```
 
 ## Events
 
@@ -125,7 +126,9 @@ interface UploadOptions {
   headers?: Record<string, string>;
 }
 
-public state: UploadState = 'new';
+type UploadState = 'new' | 'started' | 'aborted' | 'failed' | 'successful';
+
+public state: UploadState;
 public progress = 0;
 public uploadedBytes = 0;
 public totalBytes = 0;
