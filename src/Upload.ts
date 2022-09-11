@@ -1,5 +1,4 @@
 import { IncomingMessage } from 'http';
-import { URL } from 'url';
 import FormDataNode, { SubmitOptions } from 'form-data';
 
 export interface UploadOptions {
