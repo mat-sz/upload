@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ES6",
+    "module": "CommonJS",
     "declaration": true,
     "outDir": "./lib",
-    "lib": ["es6", "dom"],
+    "lib": ["ES6", "DOM"],
     "downlevelIteration": true,
     "strict": true,
     "esModuleInterop": true
