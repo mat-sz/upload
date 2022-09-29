@@ -5,7 +5,7 @@ export interface UploadOptions {
   form: Record<string, string | Blob> | FormData | FormDataNode;
   url: string;
   headers?: Record<string, string>;
-  withCredentials: boolean | undefined;
+  withCredentials?: boolean;
 }
 
 export interface UploadResponse {
