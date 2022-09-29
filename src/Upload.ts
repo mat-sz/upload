@@ -52,11 +52,11 @@ export class Upload {
   private url: string;
   private headers?: Record<string, string>;
   private xhr?: XMLHttpRequest;
+  private withCredentials?: boolean = false;
 
   private _uploadedBytes = 0;
   private _totalBytes = 0;
   private _state: UploadState = 'new';
-  private _withCredentials = false;
 
   constructor(options: UploadOptions) {
     if (!options) {
@@ -70,7 +70,7 @@ export class Upload {
     this.form = options.form;
     this.url = options.url;
     this.headers = options.headers;
-    this._withCredentials = options.withCredentials;
+    this.withCredentials = options.withCredentials;
   }
 
   /**
@@ -85,7 +85,7 @@ export class Upload {
       ) {
         this.xhr = new XMLHttpRequest();
 
-        if(this._withCredentials){
+        if (this.withCredentials) {
           this.xhr.withCredentials = true;
         }
 
