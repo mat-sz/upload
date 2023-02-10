@@ -10,6 +10,8 @@ export interface UploadOptions {
 
 export interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
+  xhr?: XMLHttpRequest;
+  status?: Number;
   headers?: Record<string, string | string[] | undefined>;
 }
 
@@ -129,6 +131,8 @@ export class Upload {
               headers[split[0].trim()] = split[1].trim();
             }
             response.headers = headers;
+            response.status = this.xhr.status;
+            response.xhr = this.xhr;
 
             switch (this.xhr.responseType) {
               case 'json':
