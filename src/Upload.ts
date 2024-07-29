@@ -2,7 +2,14 @@ import { IncomingMessage } from 'http';
 import FormDataNode, { SubmitOptions } from 'form-data';
 
 export interface UploadOptions {
-  form: Record<string, string | Blob> | FormData | FormDataNode;
+  form: 
+    | Record<string, string | Blob> 
+    | FormData
+    | FormDataNode
+    | Blob
+    | BufferSource
+    | URLSearchParams
+    | string;
   url: string;
   headers?: HeadersInit;
   withCredentials?: boolean;
@@ -50,7 +57,14 @@ export class Upload {
     progress: new Set(),
   };
 
-  private form: Record<string, string | Blob> | FormData | FormDataNode;
+  private form: 
+    | Record<string, string | Blob> 
+    | FormData
+    | FormDataNode
+    | Blob
+    | BufferSource
+    | URLSearchParams
+    | string;
   private url: string;
   private headers: Headers;
   private xhr?: XMLHttpRequest;
@@ -154,7 +168,14 @@ export class Upload {
           this.setState('aborted');
         });
 
-        if (this.form instanceof FormData) {
+        if (
+          this.form instanceof FormData ||
+          this.form instanceof Blob ||
+          this.form instanceof URLSearchParams ||
+          typeof this.form === "string" ||
+          this.form instanceof ArrayBuffer ||
+          ArrayBuffer.isView(this.form)
+        ) {
           this.xhr.send(this.form);
         } else {
           const form = this.form as Record<string, string | Blob>;
