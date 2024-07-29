@@ -18,7 +18,7 @@ export interface UploadOptions {
 export interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
   xhr?: XMLHttpRequest;
-  status?: Number;
+  status?: number;
   headers?: Headers;
 }
 
