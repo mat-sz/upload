@@ -6,6 +6,7 @@ export interface UploadOptions {
   url: string;
   headers?: Record<string, string>;
   withCredentials?: boolean;
+  method?: string;
 }
 
 export interface UploadResponse {
@@ -53,6 +54,7 @@ export class Upload {
   private form: Record<string, string | Blob> | FormData | FormDataNode;
   private url: string;
   private headers?: Record<string, string>;
+  private method: string;
   private xhr?: XMLHttpRequest;
   private withCredentials?: boolean = false;
 
@@ -72,11 +74,12 @@ export class Upload {
     this.form = options.form;
     this.url = options.url;
     this.headers = options.headers;
+    this.method = options.method || 'POST';
     this.withCredentials = options.withCredentials;
   }
 
   /**
-   * POSTs the form.
+   * Submits the form.
    */
   upload(): Promise<UploadResponse> {
     return new Promise<UploadResponse>((resolve, reject) => {
@@ -91,7 +94,7 @@ export class Upload {
           this.xhr.withCredentials = true;
         }
 
-        this.xhr.open('POST', this.url, true);
+        this.xhr.open(this.method, this.url, true);
 
         if (typeof this.headers === 'object') {
           for (const headerName of Object.keys(this.headers)) {
@@ -198,7 +201,7 @@ export class Upload {
           hostname: url.hostname,
           port: url.port,
           path: url.pathname,
-          method: 'POST',
+          method: this.method,
           headers: this.headers,
         };
 
