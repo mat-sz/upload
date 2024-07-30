@@ -16,7 +16,7 @@ export type UploadResponse = UploadNodeResponse | UploadBrowserResponse;
 export type UploadForm = UploadNodeForm | UploadBrowserForm;
 export type Upload = typeof UploadNode | typeof UploadBrowser;
 
-export function getUpload(): Upload {
+function getUpload(): Upload {
   // Check if we're running in a browser.
   if (
     typeof window !== "undefined" &&
