@@ -1,15 +1,17 @@
 import { IncomingMessage } from 'http';
 import FormDataNode, { SubmitOptions } from 'form-data';
 
+export type UploadBody =
+  | Record<string, string | Blob> 
+  | FormData
+  | FormDataNode
+  | Blob
+  | BufferSource
+  | URLSearchParams
+  | string;
+
 export interface UploadOptions {
-  form: 
-    | Record<string, string | Blob> 
-    | FormData
-    | FormDataNode
-    | Blob
-    | BufferSource
-    | URLSearchParams
-    | string;
+  form: UploadBody
   url: string;
   headers?: HeadersInit;
   withCredentials?: boolean;
@@ -58,14 +60,7 @@ export class Upload {
     progress: new Set(),
   };
 
-  private form: 
-    | Record<string, string | Blob> 
-    | FormData
-    | FormDataNode
-    | Blob
-    | BufferSource
-    | URLSearchParams
-    | string;
+  private form: UploadBody;
   private url: string;
   private headers: Headers;
   private method: string;
