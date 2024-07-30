@@ -1,6 +1,6 @@
 {
   "name": "@vixalien/upload",
-  "version": "1.3.2",
+  "version": "2.0.0",
   "description": "Isomorphic TypeScript file upload library.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
