@@ -4,7 +4,7 @@ import FormDataNode, { SubmitOptions } from 'form-data';
 export interface UploadOptions {
   form: Record<string, string | Blob> | FormData | FormDataNode;
   url: string;
-  headers?: Record<string, string>;
+  headers?: HeadersInit;
   withCredentials?: boolean;
 }
 
@@ -12,7 +12,7 @@ export interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
   xhr?: XMLHttpRequest;
   status?: Number;
-  headers?: Record<string, string | string[] | undefined>;
+  headers?: Headers;
 }
 
 export type UploadState =
@@ -52,7 +52,7 @@ export class Upload {
 
   private form: Record<string, string | Blob> | FormData | FormDataNode;
   private url: string;
-  private headers?: Record<string, string>;
+  private headers: Headers;
   private xhr?: XMLHttpRequest;
   private withCredentials?: boolean = false;
 
@@ -71,7 +71,7 @@ export class Upload {
 
     this.form = options.form;
     this.url = options.url;
-    this.headers = options.headers;
+    this.headers = new Headers(options.headers);
     this.withCredentials = options.withCredentials;
   }
 
@@ -93,11 +93,9 @@ export class Upload {
 
         this.xhr.open('POST', this.url, true);
 
-        if (typeof this.headers === 'object') {
-          for (const headerName of Object.keys(this.headers)) {
-            this.xhr.setRequestHeader(headerName, this.headers[headerName]);
-          }
-        }
+        this.headers.forEach((value, key) => {
+          this.xhr?.setRequestHeader(key, value);
+        });
 
         this.xhr.addEventListener('loadstart', () => {
           this.setState('started');
@@ -122,13 +120,13 @@ export class Upload {
               .getAllResponseHeaders()
               .replace(/\r/g, '')
               .split('\n');
-            const headers: Record<string, string> = {};
+            const headers = new Headers();
             for (const line of lines) {
               const split = line.split(':');
               if (split.length != 2) {
                 continue;
               }
-              headers[split[0].trim()] = split[1].trim();
+              headers.set(split[0].trim(), split[1].trim());
             }
             response.headers = headers;
             response.status = this.xhr.status;
@@ -187,19 +185,24 @@ export class Upload {
             res.on('end', () => {
               const response: UploadResponse = {};
               response.data = body;
-              response.headers = res.headers;
+              response.headers = new Headers(res.headers as Record<string, string>);
               resolve(response);
             });
           }
         };
 
         const url = new URL(this.url);
+        const headers: Record<string, string> = {};
+        this.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+
         const options: SubmitOptions = {
           hostname: url.hostname,
           port: url.port,
           path: url.pathname,
           method: 'POST',
-          headers: this.headers,
+          headers,
         };
 
         let formData: FormDataNode;
