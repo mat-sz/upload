@@ -1,10 +1,10 @@
 import {
   Upload,
+  UploadBody,
   UploadOptions,
   UploadProgressEventListener,
   UploadResponse,
 } from './Upload';
-import FormDataNode from 'form-data';
 
 interface UploadFunctionOptions extends Omit<UploadOptions, 'form' | 'url' | 'withCredentials'> {
   onProgress?: UploadProgressEventListener;
@@ -12,9 +12,9 @@ interface UploadFunctionOptions extends Omit<UploadOptions, 'form' | 'url' | 'wi
 
 export async function upload(
   url: string,
-  form: Record<string, string | Blob> | FormData | FormDataNode,
+  form: UploadBody,
   options?: UploadFunctionOptions,
-  withCredentials: boolean = false
+  withCredentials = false
 ): Promise<UploadResponse> {
   const upload = new Upload({
     url,

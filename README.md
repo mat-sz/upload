@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="https://raw.githubusercontent.com/mat-sz/upload/master/logo.png" alt="upload" width="700">
+<img src="https://raw.githubusercontent.com/vixalien/upload/master/logo.png" alt="upload" width="700">
 </h1>
 
 <p align="center">
@@ -7,7 +7,7 @@ Isomorphic TypeScript file upload library for browser and node.js environments.
 </p>
 
 <p align="center">
-<img alt="workflow" src="https://img.shields.io/github/workflow/status/mat-sz/upload/Node.js%20CI%20(yarn)">
+<img alt="workflow" src="https://img.shields.io/github/workflow/status/vixalien/upload/Node.js%20CI%20(yarn)">
 <a href="https://npmjs.com/package/upload">
 <img alt="npm" src="https://img.shields.io/npm/v/upload">
 <img alt="npm" src="https://img.shields.io/npm/dw/upload">

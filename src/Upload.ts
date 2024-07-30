@@ -1,18 +1,28 @@
 import { IncomingMessage } from 'http';
 import FormDataNode, { SubmitOptions } from 'form-data';
 
+export type UploadBody =
+  | Record<string, string | Blob> 
+  | FormData
+  | FormDataNode
+  | Blob
+  | BufferSource
+  | URLSearchParams
+  | string;
+
 export interface UploadOptions {
-  form: Record<string, string | Blob> | FormData | FormDataNode;
+  form: UploadBody
   url: string;
-  headers?: Record<string, string>;
+  headers?: HeadersInit;
   withCredentials?: boolean;
+  method?: string;
 }
 
 export interface UploadResponse {
   data?: string | ArrayBuffer | Blob;
   xhr?: XMLHttpRequest;
-  status?: Number;
-  headers?: Record<string, string | string[] | undefined>;
+  status?: number;
+  headers?: Headers;
 }
 
 export type UploadState =
@@ -50,9 +60,10 @@ export class Upload {
     progress: new Set(),
   };
 
-  private form: Record<string, string | Blob> | FormData | FormDataNode;
+  private form: UploadBody;
   private url: string;
-  private headers?: Record<string, string>;
+  private headers: Headers;
+  private method: string;
   private xhr?: XMLHttpRequest;
   private withCredentials?: boolean = false;
 
@@ -71,12 +82,13 @@ export class Upload {
 
     this.form = options.form;
     this.url = options.url;
-    this.headers = options.headers;
+    this.headers = new Headers(options.headers);
+    this.method = options.method || 'POST';
     this.withCredentials = options.withCredentials;
   }
 
   /**
-   * POSTs the form.
+   * Submits the form.
    */
   upload(): Promise<UploadResponse> {
     return new Promise<UploadResponse>((resolve, reject) => {
@@ -91,13 +103,11 @@ export class Upload {
           this.xhr.withCredentials = true;
         }
 
-        this.xhr.open('POST', this.url, true);
+        this.xhr.open(this.method, this.url, true);
 
-        if (typeof this.headers === 'object') {
-          for (const headerName of Object.keys(this.headers)) {
-            this.xhr.setRequestHeader(headerName, this.headers[headerName]);
-          }
-        }
+        this.headers.forEach((value, key) => {
+          this.xhr?.setRequestHeader(key, value);
+        });
 
         this.xhr.addEventListener('loadstart', () => {
           this.setState('started');
@@ -122,13 +132,13 @@ export class Upload {
               .getAllResponseHeaders()
               .replace(/\r/g, '')
               .split('\n');
-            const headers: Record<string, string> = {};
+            const headers = new Headers();
             for (const line of lines) {
               const split = line.split(':');
               if (split.length != 2) {
                 continue;
               }
-              headers[split[0].trim()] = split[1].trim();
+              headers.set(split[0].trim(), split[1].trim());
             }
             response.headers = headers;
             response.status = this.xhr.status;
@@ -156,7 +166,14 @@ export class Upload {
           this.setState('aborted');
         });
 
-        if (this.form instanceof FormData) {
+        if (
+          this.form instanceof FormData ||
+          this.form instanceof Blob ||
+          this.form instanceof URLSearchParams ||
+          typeof this.form === "string" ||
+          this.form instanceof ArrayBuffer ||
+          ArrayBuffer.isView(this.form)
+        ) {
           this.xhr.send(this.form);
         } else {
           const form = this.form as Record<string, string | Blob>;
@@ -187,19 +204,24 @@ export class Upload {
             res.on('end', () => {
               const response: UploadResponse = {};
               response.data = body;
-              response.headers = res.headers;
+              response.headers = new Headers(res.headers as Record<string, string>);
               resolve(response);
             });
           }
         };
 
         const url = new URL(this.url);
+        const headers: Record<string, string> = {};
+        this.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+
         const options: SubmitOptions = {
           hostname: url.hostname,
           port: url.port,
           path: url.pathname,
-          method: 'POST',
-          headers: this.headers,
+          method: this.method,
+          headers,
         };
 
         let formData: FormDataNode;
